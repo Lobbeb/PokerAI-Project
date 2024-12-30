@@ -49,27 +49,29 @@ def queryPlayerName(_name):
 *                              and the players total amount of chips (the amount of chips alrady put into
 *                              pot plus the remaining amount of chips).
 '''
-def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingChips):
+def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingChips, currentHand):
     print("Player requested to choose an opening action.")
         
     def chooseActionBasedOnProbability():
+        print("Minimum pot:", _minimumPotAfterOpen, "Current bet:", _playersCurrentBet, "Remaining chips:", _playersRemainingChips)
         p = prob_calculator()
-        p.update(CURRENT_HAND)
-        p.update(CARDS_THROWN)
-        hand_t, hand_val = p.evaluate_hand(CURRENT_HAND)
+        p.update(currentHand)
+        hand_t, hand_val = p.evaluate_hand(currentHand)
         prob_opp_better = p.probability_oponent_has_better_hand(hand_t, hand_val)
-        if prob_opp_better > 0.5:
+        print("Current hand:", currentHand, "Probability opponent better:", prob_opp_better)
+        if prob_opp_better > 0.4:
             return ClientBase.BettingAnswer.ACTION_CHECK
-        elif prob_opp_better > 0.4:
-                return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen
-        elif prob_opp_better > 0.3:
-            return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen + _playersRemainingChips / 10
-        elif prob_opp_better > 0.2:
-            return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen + _playersRemainingChips / 5
-        elif prob_opp_better > 0.1:
-            return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen + _playersRemainingChips / 2
+        elif _playersCurrentBet + _playersRemainingChips > _minimumPotAfterOpen:
+            if prob_opp_better > 0.3:
+                    return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen
+            elif prob_opp_better > 0.2:
+                return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen + _playersCurrentBet
+            elif prob_opp_better > 0.1:
+                return ClientBase.BettingAnswer.ACTION_OPEN, (int)(_playersRemainingChips / 2)
+            else:
+                return ClientBase.BettingAnswer.ACTION_ALLIN
         else:
-            return ClientBase.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen + _playersRemainingChips
+            return ClientBase.BettingAnswer.ACTION_CHECK
 
 
     return chooseActionBasedOnProbability()
@@ -93,32 +95,31 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
 *                                  puts into the pot and must be between <code>minimumAmountToRaiseTo</code> and
 *                                  <code>playersCurrentBet+playersRemainingChips</code>.
 '''
-def queryCallRaiseAction(_maximumBet, _minimumAmountToRaiseTo, _playersCurrentBet, _playersRemainingChips):
+def queryCallRaiseAction(_maximumBet, _minimumAmountToRaiseTo, _playersCurrentBet, _playersRemainingChips, currentHand):
     print("Player requested to choose a call/raise action.")
     # Action
     def chooseRaiseOrFold():
-        if  _playersRemainingChips > _minimumAmountToRaiseTo:
-            print("Remaining chips:",_playersRemainingChips, "Minimum raise:", _minimumAmountToRaiseTo, "Current bet:", _playersCurrentBet, "Maximum bet:", _maximumBet)
-            p.update(CURRENT_HAND)
-            hand_t, hand_val = p.evaluate_hand(CURRENT_HAND)
-            prob_opp_better = p.probability_oponent_has_better_hand(hand_t, hand_val)
-            print("Current hand:", CURRENT_HAND, "Probability opponent better:", prob_opp_better)
+        print("Remaining chips:",_playersRemainingChips, "Minimum raise:", _minimumAmountToRaiseTo, "Current bet:", _playersCurrentBet, "Maximum bet:", _maximumBet)
+        p.update(currentHand)
+        hand_t, hand_val = p.evaluate_hand(currentHand)
+        prob_opp_better = p.probability_oponent_has_better_hand(hand_t, hand_val)
+        print("Current hand:", currentHand, "Probability opponent better:", prob_opp_better)
+        if _playersCurrentBet + _playersRemainingChips > _minimumAmountToRaiseTo:
             if prob_opp_better > 0.5:
                 return ClientBase.BettingAnswer.ACTION_CALL
             elif prob_opp_better > 0.4:
                     return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
             elif prob_opp_better > 0.3:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _maximumBet / 2
+                return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
             elif prob_opp_better > 0.2:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _maximumBet
+                return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
             elif prob_opp_better > 0.1:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _playersRemainingChips / 2
+                return ClientBase.BettingAnswer.ACTION_ALLIN
             else:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _playersRemainingChips
-            
+                return ClientBase.BettingAnswer.ACTION_ALLIN
         else:
             return ClientBase.BettingAnswer.ACTION_FOLD
-        
+            
     # I wonder if we choose to raise more than the opponent has in their pot, will they automatically fold?
     return chooseRaiseOrFold()
 
