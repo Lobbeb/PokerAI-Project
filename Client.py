@@ -94,34 +94,78 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
 *                                  is raise, the answers amount of chips is the total amount of chips the player
 *                                  puts into the pot and must be between <code>minimumAmountToRaiseTo</code> and
 *                                  <code>playersCurrentBet+playersRemainingChips</code>.
+"queryCallRaiseAction GÖR DENNA FITT WILLIAM
 '''
+
 def queryCallRaiseAction(_maximumBet, _minimumAmountToRaiseTo, _playersCurrentBet, _playersRemainingChips, currentHand):
+    """
+    Decide on Call/Raise/Fold/All-in action based on:
+      1) Hand strength (via p.evaluate_hand).
+      2) Probability opponent has a better hand (p.probability_oponent_has_better_hand).
+      3) Whether we can afford to call or raise (stack sizes).
+    """
     print("Player requested to choose a call/raise action.")
-    # Action
-    def chooseRaiseOrFold():
-        print("Remaining chips:",_playersRemainingChips, "Minimum raise:", _minimumAmountToRaiseTo, "Current bet:", _playersCurrentBet, "Maximum bet:", _maximumBet)
-        p.update(currentHand)
-        hand_t, hand_val = p.evaluate_hand(currentHand)
-        prob_opp_better = p.probability_oponent_has_better_hand(hand_t, hand_val)
-        print("Current hand:", currentHand, "Probability opponent better:", prob_opp_better)
-        if _playersCurrentBet + _playersRemainingChips > _minimumAmountToRaiseTo:
-            if prob_opp_better > 0.5:
-                return ClientBase.BettingAnswer.ACTION_CALL
-            elif prob_opp_better > 0.4:
-                    return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
-            elif prob_opp_better > 0.3:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
-            elif prob_opp_better > 0.2:
-                return ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo
-            elif prob_opp_better > 0.1:
-                return ClientBase.BettingAnswer.ACTION_ALLIN
-            else:
-                return ClientBase.BettingAnswer.ACTION_ALLIN
+
+    # Update deck info (cards removed) and evaluate our current hand
+    p.update(currentHand)
+    hand_t, hand_val = p.evaluate_hand(currentHand)
+    prob_opp_better = p.probability_oponent_has_better_hand(hand_t, hand_val)
+
+    print(f"Current hand: {currentHand}")
+    print(f"Probability opponent has a better hand: {prob_opp_better:.3f}")
+    print(f"Remaining chips: {_playersRemainingChips}, Min raise: {_minimumAmountToRaiseTo}, "
+          f"Current bet: {_playersCurrentBet}, Max bet among players: {_maximumBet}")
+
+    # If we cannot even call (our total chips + current bet < their bet), we either fold or go all-in:
+    if _playersCurrentBet + _playersRemainingChips < _maximumBet:
+        # Not enough chips to call the max bet. 
+        # If we still have some chips, we might choose to go all in instead of folding.
+        if _playersRemainingChips > 0:
+            print("Insufficient chips to call; going all-in instead of folding.")
+            return ClientBase.BettingAnswer.ACTION_ALLIN
         else:
+            print("No chips left; forced to fold.")
             return ClientBase.BettingAnswer.ACTION_FOLD
-            
-    # I wonder if we choose to raise more than the opponent has in their pot, will they automatically fold?
-    return chooseRaiseOrFold()
+
+    # We can at least call. Now decide if we should fold, call, raise, or all-in:
+    # You can adjust these probability thresholds to your liking:
+    if prob_opp_better > 0.65:
+        # If we think there's a strong chance the opponent has us beat, we fold:
+        print("Likely behind; folding.")
+        return ClientBase.BettingAnswer.ACTION_FOLD
+
+    elif prob_opp_better > 0.5:
+        # Medium-high probability we are behind, but we can call cheaply:
+        print("Somewhat risky; choosing to call.")
+        return ClientBase.BettingAnswer.ACTION_CALL
+
+    elif prob_opp_better > 0.3:
+        # We may be favored; let's do a minimal raise to push our advantage:
+        if (_playersCurrentBet + _playersRemainingChips) >= _minimumAmountToRaiseTo:
+            print("Moderate edge; making a minimal raise.")
+            return (ClientBase.BettingAnswer.ACTION_RAISE, _minimumAmountToRaiseTo)
+        else:
+            print("Can’t raise the minimum; calling instead.")
+            return ClientBase.BettingAnswer.ACTION_CALL
+
+    elif prob_opp_better > 0.1:
+        # Good edge; we might want to raise bigger. For example, half of our remaining stack:
+        half_stack_raise = _playersCurrentBet + _playersRemainingChips // 2
+        chosen_raise_amount = max(half_stack_raise, _minimumAmountToRaiseTo)
+        chosen_raise_amount = min(chosen_raise_amount, _playersCurrentBet + _playersRemainingChips)  # can't exceed all-in
+
+        if chosen_raise_amount >= _minimumAmountToRaiseTo:
+            print(f"Strong edge; raising to {chosen_raise_amount}.")
+            return (ClientBase.BettingAnswer.ACTION_RAISE, chosen_raise_amount)
+        else:
+            print("Can’t raise that high; calling instead.")
+            return ClientBase.BettingAnswer.ACTION_CALL
+
+    else:
+        # Very strong edge; let's go all-in:
+        print("Very strong edge; going all-in!")
+        return ClientBase.BettingAnswer.ACTION_ALLIN
+
 
 '''
 * Modify queryCardsToThrow() and add your strategy to throw cards
