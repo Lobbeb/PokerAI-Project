@@ -1,7 +1,9 @@
 from collections import Counter
+import random
 
 # Poker hand rankings
 RANK_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+
 
 def validate_hand(hand_):
     """Ensure the hand contains valid cards."""
@@ -56,16 +58,19 @@ def queryCardsToThrow(hand_):
     Decide which cards to throw to maximize the potential of forming a stronger hand.
     Return a string of cards to throw away in the format: 'card1 card2 '.
     """
-    # Validate the hand
+    #Bluff flag
+    Bluff_Angle = 0
+
+    #Validate the hand
     validate_hand(hand_)
 
-    # Analyze the hand
+    #Analyze the hand
     strength, data = hand_strength(hand_)
 
-    # Determine which cards to throw
+    #Determine which cards to throw
     throwArray = []
     if strength in {"straight_flush", "four_of_a_kind", "full_house", "flush", "straight"}:
-        # Strong hands keep all cards
+        #Strong hands keep all cards
         throwArray = []
     elif strength == "three_of_a_kind":
         #Keep three of a kind discard the other two
@@ -76,9 +81,20 @@ def queryCardsToThrow(hand_):
         pairs = [rank for rank, count in data.items() if count == 2]
         throwArray = [card for card in hand_ if card[:-1] not in pairs]
     elif strength == "one_pair":
-        #Keep pair discard the other three
+        #Keep the pair and the highest card outside the pair if its J Q K or A
         pair_rank = [rank for rank, count in data.items() if count == 2][0]
-        throwArray = [card for card in hand_ if card[:-1] != pair_rank]
+        high_value_ranks = {'J', 'Q', 'K', 'A'}
+        non_pair_cards = [card for card in hand_ if card[:-1] != pair_rank]
+        high_card = max(non_pair_cards, key=lambda card: RANK_VALUES.index(card[:-1]), default=None)
+
+        #Had a significant high_card
+        if high_card and high_card[:-1] in high_value_ranks:
+            throwArray = [card for card in hand_ if card[:-1] != pair_rank and card != high_card]
+            if random.random() > 0.3:
+                Bluff_Angle = 1
+
+        else:
+            throwArray = [card for card in hand_ if card[:-1] != pair_rank]
     elif strength == "high_card":
         # Check for almost-flush or almost-straight cases
         suits = [card[-1] for card in hand_]
@@ -96,9 +112,12 @@ def queryCardsToThrow(hand_):
                     throwArray = [card for card in hand_ if RANK_VALUES.index(card[:-1]) not in straight_ranks]
                     break
             else:
-                #Weak hand discard all cards except highest card
-                high_card = max(data.keys(), key=lambda rank: RANK_VALUES.index(rank))
-                throwArray = [card for card in hand_ if card[:-1] != high_card]
+                # Weak hand: Keep all high-value cards (J, Q, K, A)
+                high_value_ranks = {'J', 'Q', 'K', 'A'}
+                throwArray = [card for card in hand_ if card[:-1] not in high_value_ranks]
+                if len(throwArray) <= 2 and random.random() <= 0.2:
+                    Bluff_Angle = 1
+                    
 
     #Make string separated by space
-    return ' '.join(throwArray) + ' '
+    return ' '.join(throwArray) + ' ', Bluff_Angle
