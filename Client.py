@@ -1,7 +1,8 @@
 import socket
 import random
-import ClientBase as cb
 from Agent import Poker_Agent
+import ClientBase as cb
+import math
 
 # IP address and port
 TCP_IP = '127.0.0.1'
@@ -10,8 +11,9 @@ BUFFER_SIZE = 1024
 
 
 # Agent
-POKER_CLIENT_NAME = 'Smart'
-
+#POKER_CLIENT_NAME = 'WILLIAM'
+#POKER_CLIENT_NAME = 'RUBEN'
+POKER_CLIENT_NAME = 'NEUTRAL'
 CURRENT_HAND = []
 
 
@@ -24,6 +26,7 @@ class pokerGames(object):
         self.CurrentHand = []
         self.Ante = 0
         self.playersCurrentBet = 0
+        print('test')
 
 '''
 * Gets the name of the player.
@@ -54,7 +57,7 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
     print(f'    |minpotafterOpen {_minimumPotAfterOpen} playersCurBet {_playersCurrentBet} remainingchips {_playersRemainingChips}')
     print("Minimum pot:", _minimumPotAfterOpen, "Current bet:", _playersCurrentBet, "Remaining chips:", _playersRemainingChips)
 
-    _maximumBet = _minimumPotAfterOpen + 20 if _playersRemainingChips > 20 else _playersRemainingChips
+    _maximumBet = _minimumPotAfterOpen + math.ceil(0.25*_playersRemainingChips if _playersRemainingChips > 20 else _playersRemainingChips)
 
     hand_t, hand_val, prob_opp_better = a.get_hand_strength_and_prob()
     print("Current hand:", a.hand, "Probability opponent better:", prob_opp_better)
@@ -75,13 +78,19 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
                 return cb.BettingAnswer.ACTION_OPEN, _minimumPotAfterOpen
             else:
                 return cb.BettingAnswer.ACTION_CHECK
+    
     #-----POST-DRAW OPEN ACTION PHASE-----
     else:
-        best_opp_hand = a.get_best_opponent_hand()
+        best_opp_hand, opponent_with_best_hand = a.get_best_opponent_hand()
         if a.HAND_RANK.index(hand_t) < a.HAND_RANK.index(best_opp_hand):
             cb.BettingAnswer.ACTION_CHECK
         elif a.HAND_RANK.index(hand_t) == a.HAND_RANK.index(best_opp_hand):
+            if opponent_with_best_hand.post_draw < 0:
+                if a.bluff_oppurtunity and random.randint(0, 1) <= 0.5:
+                    return cb.BettingAnswer.ACTION_OPEN, _maximumBet
             
+
+
 
 
 
@@ -115,8 +124,7 @@ def queryCallRaiseAction(_maximumBet, _minimumAmountToRaiseTo, _playersCurrentBe
     print("Remaining chips:",_playersRemainingChips, "Minimum raise:", _minimumAmountToRaiseTo, "Current bet:", _playersCurrentBet, "Maximum bet:", _maximumBet)
     hand_t, hand_val, prob_opp_better = a.get_hand_strength_and_prob()
     print("Current hand:", a.hand, "Probability opponent better:", prob_opp_better)
-    
-    
+
 
 '''
 * Modify queryCardsToThrow() and add your strategy to throw cards
@@ -127,9 +135,10 @@ def queryCallRaiseAction(_maximumBet, _minimumAmountToRaiseTo, _playersCurrentBe
 * @see     #infoCardsInHand(ca.ualberta.cs.poker.Hand)
 '''
 def queryCardsToThrow(_hand):
-    print('-------------------------------------------queryCardsToThrow---------------')
-    print(f'    |hand {_hand}')
     return a.cards_to_throw()
+
+
+
 
 # InfoFunction:
 
@@ -280,3 +289,4 @@ def infoRoundResult(_playerName, _winAmount):
     a.opponent_win(_playerName,False)
     print("WINNER Player "+ _playerName +" amount " + _winAmount + " chips.")
     a.new_round()
+
