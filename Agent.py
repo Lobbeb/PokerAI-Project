@@ -11,7 +11,7 @@ class opponent:
         self.HAND_RANK = ["NAN","High_Card","One_Pair","Two_Pair","Three_of_a_Kind","Straight","Flush","Full_House","Four_of_a_Kind","Straight_Flush"]
         self.name = name #--
 
-        self.pre_draw =0#-----------------------------------fix vet inte vad för värden och data typ ännnnnnnnn
+        self.pre_draw = 0#-----------------------------------fix vet inte vad för värden och data typ ännnnnnnnn
         self.post_draw = 0 #--------------------------------fix
         self.bluff = 0 # -----------------------------------fix
 
@@ -647,7 +647,7 @@ class Poker_Agent:
         self.p = prob_calculator()
         self.hand =[]
         self.opponents = {}
-        self.rounds = 0
+        self.rounds = 1
         self.has_drawn = False
         self.bluff_oppurtunity = False
     
@@ -777,8 +777,15 @@ class Poker_Agent:
         pre_draw = 0
         post_draw = 0
         for opp in self.opponents:
-            opp.pre_draw, opp.post_draw = opp.deduce_opponent()
             pre_draw += opp.pre_draw
             post_draw += opp.post_draw
         return pre_draw, post_draw
+    
+    def get_best_opponent_hand(self):
+        '''Returns the best hand of the opponents'''
+        best_hand = "NAN"
+        for opp in self.opponents:
+            if self.HAND_RANK.index(opp.possible_hand) > self.HAND_RANK.index(best_hand):
+                best_hand = opp.possible_hand
+        return best_hand
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
