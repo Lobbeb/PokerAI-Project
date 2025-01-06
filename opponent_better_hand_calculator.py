@@ -6,16 +6,16 @@ from collections import Counter
     of an opponent having a better hand than the user. The class does it accuratly except for highcard and if the opponent would have a straight_flush as it is calculated within the straight probability and flush probability'''
 class prob_calculator:
     def __init__(self):
-        self.RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
+        self.RANKS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
         self.card_in_deck = 52
         self.removed_cards = set()
-        self.rank_set = {'A':4, '2':4, '3':4, '4':4, '5':4, '6':4, '7':4, '8':4, '9':4, '10':4, 'J':4, 'Q':4, 'K':4}
+        self.rank_set = {'A':4, '2':4, '3':4, '4':4, '5':4, '6':4, '7':4, '8':4, '9':4, 'T':4, 'J':4, 'Q':4, 'K':4}
         self.suit_set = {'s': 13,'h':13,'c':13,'d':13}
     
     def update(self,cards =None):
         if cards:
             self.update_removed_cards(cards)
-        print(f'removed_cards {self.removed_cards}')
+        #print(f'removed_cards {self.removed_cards}')
         self.reset()
         self.update_deck(self.removed_cards)
         self.update_rank_set(self.removed_cards)
@@ -29,7 +29,7 @@ class prob_calculator:
 
     def update_deck(self,cards):
         self.card_in_deck -= len(cards) 
-        print(f'cards_in_deck {self.card_in_deck}')
+        #print(f'cards_in_deck {self.card_in_deck}')
     
     def reset_deck(self):
         self.card_in_deck = 52
@@ -48,23 +48,21 @@ class prob_calculator:
         '''Removes one instace of suit given cards'''
         for card in cards:
             self.suit_set[card[-1]] = self.suit_set[card[-1]] -1
-        print(f'siut_set {self.suit_set}')
+        #print(f'siut_set {self.suit_set}')
     
     def reset_suit_set(self):
         '''sets the numbers of cards in each suit to its default value'''
         self.suit_set = {'s': 13,'h':13,'c':13,'d':13}
 
-
-
     def update_rank_set(self, cards):
         '''Removes one instace of each rank in cards'''
         for card in cards:
             self.rank_set[card[:-1]] = self.rank_set[card[:-1]] -1
-        print(f'rank_set {self.rank_set}')
+        #print(f'rank_set {self.rank_set}')
     
     def reset_rank_set(self):
         '''sets the numbers of cards in each rank to its default value'''
-        self.rank_set = {'A':4, '2':4, '3':4, '4':4, '5':4, '6':4, '7':4, '8':4, '9':4, '10':4, 'J':4, 'Q':4, 'K':4}
+        self.rank_set = {'A':4, '2':4, '3':4, '4':4, '5':4, '6':4, '7':4, '8':4, '9':4, 'T':4, 'J':4, 'Q':4, 'K':4}
 
     def print_rank_set(self):
         print(self.rank_set)
@@ -79,7 +77,7 @@ class prob_calculator:
 
         # Count the occurrences of each rank and suit
         rank_counts = Counter(ranks)
-        print(rank_counts)
+        #print(rank_counts)
         suit_counts = Counter(suits)
 
         is_flush = len(suit_counts) == 1  # All cards are of the same suit
@@ -96,14 +94,14 @@ class prob_calculator:
         # Determine hand type
         if is_flush and is_straight:
             value = 0
-            print(f' Straight_Flush {value}')
+            #print(f' Straight_Flush {value}')
             return "Straight_Flush" , value
         
         # Four of a Kind
         if 4 in rank_counts.values():
             key = [key for key in rank_counts if rank_counts[key] == 4]
             value = self.RANKS.index(key[0]) +2
-            print(f' Four_of_a_Kind {value}')
+            #print(f' Four_of_a_Kind {value}')
             return "Four_of_a_Kind" ,value
         
         # Full House
@@ -111,13 +109,13 @@ class prob_calculator:
             key = [key for key in rank_counts if rank_counts[key] == 3]
             key2 = [key for key in rank_counts if rank_counts[key] == 2]
             value = self.RANKS.index(key[0]) + self.RANKS.index(key2[0]) +2
-            print(f' Full_House {value}')
+            #print(f' Full_House {value}')
             return "Full_House", value
         
         # Flush
         if is_flush:
             value = 2
-            print(f' Flush {value}')
+            #print(f' Flush {value}')
             return "Flush", value
         
         # Straight
@@ -133,35 +131,35 @@ class prob_calculator:
                         value = self.RANKS.index(c[:-1])+2
                 if v2 ==5:
                     value = 5
-            print(f' Straight {value}')
+            #print(f' Straight {value}')
             return "Straight", value
         
         # Three of a Kind
         if 3 in rank_counts.values():
             key = [key for key in rank_counts if rank_counts[key] == 3]
             value = self.RANKS.index(key[0]) +2 
-            print(f' Three_of_a_Kind {value}')
+            #print(f' Three_of_a_Kind {value}')
             return "Three_of_a_Kind", value
         
         # Two Pair
         if sorted(rank_counts.values()) == [1, 2, 2]:
             key = [key for key in rank_counts if rank_counts[key] == 2]
             value = self.RANKS.index(key[0]) + self.RANKS.index(key[1]) +2 
-            print(f' Two_Pair {value}')
+            #print(f' Two_Pair {value}')
             return "Two_Pair" , value
         
         # One Pair
         if 2 in rank_counts.values():
             key = [key for key in rank_counts if rank_counts[key] == 2]
             value = self.RANKS.index(key[0])+2
-            print(f' One_Pair {value}')
+            #print(f' One_Pair {value}')
             return "One_Pair", value
         
         # High Card
         for c in hand:
             if self.RANKS.index(c[:-1])+2 > value:
                 value = self.RANKS.index(c[:-1])+2
-        print(f' High_Card {value}')
+        #print(f' High_Card {value}')
 
         return "High_Card", value
 
@@ -181,19 +179,19 @@ class prob_calculator:
 
         if agent_hand_type == "One_Pair":
             p += self.p_one_pairs(agent_value)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_two_pairs(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_three_pairs(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_straights(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_flush(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_full_house(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             p += self.p_four_of_kind(0)
-            print(f'p {p}')
+            #print(f'p {p}')
             pass
 
         elif agent_hand_type == "Two_Pair":
@@ -209,16 +207,16 @@ class prob_calculator:
         elif agent_hand_type == "Three_of_a_Kind":
 
             p += self.p_three_pairs(agent_value)
-            print(f'three of a kind {self.p_three_pairs(agent_value)} agent value {agent_value}')
+            #print(f'three of a kind {self.p_three_pairs(agent_value)} agent value {agent_value}')
             p += self.p_straights(0)
-            print(f'straight {self.p_straights(0)}') 
+            #print(f'straight {self.p_straights(0)}') 
              
             p += self.p_flush(0)
-            print(f'flush {self.p_flush(0)}')
+            #print(f'flush {self.p_flush(0)}')
             p += self.p_full_house(0)
-            print(f'full house {self.p_full_house(0)}')
+            #print(f'full house {self.p_full_house(0)}')
             p+= self.p_four_of_kind(0)
-            print (f'four_of_kind {self.p_four_of_kind(0)}')
+            #print (f'four_of_kind {self.p_four_of_kind(0)}')
             pass
 
         elif agent_hand_type == "Straight":
@@ -245,7 +243,7 @@ class prob_calculator:
 
         elif agent_hand_type == "Straight_Flush":
             pass
-        print(f'p {p/math.comb(self.card_in_deck,5)}')
+        #print(f'p {p/math.comb(self.card_in_deck,5)}')
         return p/math.comb(self.card_in_deck,5)
             
     
@@ -255,8 +253,8 @@ class prob_calculator:
 
         # calculates how many cards are left of each rank 
         lefts = {1:0,2:0,3:0,4:0}
-        for c in self.rank_set:
 
+        for c in self.rank_set:
             lefts[self.rank_set[c]]+=1
 
         # for each rank, checks if there is enough card to form a pair and if the current rank is higher than the players hand,
@@ -403,12 +401,107 @@ class prob_calculator:
 
         
 
+# Instantiate the probability calculator
+prob_calc = prob_calculator()
+
+test_hands = [
+    # High Card
+    ['2h', '3d', '4s', '8c', 'Ah'],  # High card King
+    ['3h', '5d', '7s', '9c', 'Kd'],  # High card Jack
+    ['4h', '6d', '8s', 'Tc', 'Qd'],  # High card Queen
+    ['2h', '3d', '4s', '8c', 'Jh'],  # High card King
+    ['3h', '5d', '7s', '9c', 'Td'],  # High card Jack
+    ['4h', '6d', '8s', '2c', '9d'],  # High card Queen
+    ['4h', '6d', '3s', '2c', '8d'],
+    ['4h', '6d', '5s', '2c', '7d'],
+
+    # One Pair
+    ['2h', '2d', '4s', '7c', 'Kh'],  # Pair of 2s
+    ['3h', '3d', '5s', '9c', 'Qd'],  # Pair of 3s
+    ['4h', '4d', '6s', 'Tc', 'Ad'],  # Pair of 4s
+    ['5h', '5d', '4s', '7c', 'Kh'],
+    ['6h', '6d', '4s', '7c', 'Kh'],
+    ['7h', '7d', '4s', '9c', 'Kh'],
+    ['8h', '8d', '4s', '7c', 'Kh'],
+    ['9h', '9d', '4s', '7c', 'Kh'],
+    ['Th', 'Td', '4s', '7c', 'Kh'],
+    ['Jh', 'Jd', '4s', '7c', 'Kh'],
+    ['Qh', 'Qd', '4s', '7c', 'Kh'],
+    ['Kh', '2d', '4s', '7c', 'Kh'],
+    ['Ah', 'Ad', '4s', '7c', 'Kh'],
+
+    # Two Pair
+    ['2h', 'Ad', 'As', 'Kc', 'Kh'],  # Pair of 2s and 3s
+    ['4h', 'Jd', 'Js', 'Qc', 'Qd'],  # Pair of 4s and 5s
+    ['6h', '9d', '9s', 'Tc', 'Td'],  # Pair of 6s and 7s
+    ['2h', '8d', '8s', '7c', '7h'],
+    ['2h', '6d', '6s', '5c', '5h'],
+    ['2h', '4d', '4s', '3c', '3h'],
+    ['2h', '2d', 'As', 'Ac', 'Kh'],
+    ['2h', '2d', '3s', '3c', 'Kh'],
+    ['2h', 'Kd', '3s', '3c', 'Kh'],
+    ['2h', '4d', '4s', 'Qc', 'Qh'],
+    ['2h', '5d', '5s', 'Jc', 'Jh'],
+    ['2h', '6d', '6s', 'Tc', 'Th'],
+    ['2h', '7d', '7s', '9c', '9h'],
+
+    # Three of a Kind
+    ['2h', '2d', '2s', '9c', 'Kh'],  # Three 2s
+    ['3h', '3d', '3s', '8c', 'Qd'],  # Three 3s
+    ['4h', '4d', '4s', '7c', 'Ad'],  # Three 4s
+    ['5h', '5d', '5s', '7c', 'Ad'],
+    ['6h', '6d', '6s', '7c', 'Ad'],
+    ['7h', '7d', '7s', '2c', 'Ad'],
+    ['8h', '8d', '8s', '7c', 'Ad'],
+    ['9h', '9d', '9s', '7c', 'Ad'],
+    ['Th', 'Td', 'Ts', '7c', 'Ad'],
+    ['Jh', 'Jd', 'Js', '7c', 'Ad'],
+    ['Qh', 'Qd', 'Qs', '7c', 'Ad'],
+    ['Kh', 'Kd', 'Ks', '7c', 'Ad'],
+    ['4h', '2d', 'As', 'Ac', 'Ad'],
+
+    # Straight
+    ['2h', '3d', '4s', '5c', 'Ah'],
+    ['2h', '3d', '4s', '5c', '6h'],  # Straight to 6
+    ['3h', '4d', '5s', '6c', '7h'],  # Straight to 7
+    ['4h', '6d', '7s', '8c', '5h'],  # Straight to 9
+    ['9h', '8d', '7s', '5c', '6h'],
+    ['9h', '8d', '7s', 'Tc', '6h'],
+    ['9h', '8d', '7s', 'Tc', 'Jh'],
+    ['9h', '8d', 'Qs', 'Tc', 'Jh'],
+    ['9h', 'Kd', 'Qs', 'Tc', 'Jh'],
+    ['Ah', 'Kd', 'Qs', 'Tc', 'Jh'],
+
+    # Flush
+    ['2h', '5h', '7h', '9h', 'Kh'],  # Heart flush
+    ['3d', '5d', '7d', '9d', 'Qd'],  # Diamond flush
+    ['4s', '6s', '8s', 'Ts', 'As'],  # Spade flush
+
+    # Full House
+    ['2h', '2d', '2s', '3c', '3d'],  # Full house 2s over 5s
+    ['Th', 'Td', '6s', '6c', '6d'],  # Full house 3s over 4s
+    ['Ah', 'Ad', 'As', 'Kc', 'Kd'],  # Full house 4s over 6s
+
+    # Four of a Kind
+    ['2h', '2d', '2s', '2c', 'Kh'],  # Four 2s
+    ['Th', 'Td', 'Ts', 'Tc', 'Qd'],  # Four 3s
+    ['Ah', 'Ac', 'As', '4c', 'Ad'],  # Four 4s
+
+    # Straight Flush
+    ['2h', '3h', '4h', '5h', '6h'],  # Straight flush to 6
+    ['As', 'Ks', 'Qs', 'Js', 'Ts'],  # Straight flush to 9
+]
+
 
 #exempel
-#hand = ['2s', 'Ad', '3c', '4h', '5s']  # start hand
-#d = ['4s', '5d','6s','2h'] # kort som swappas
-#p = prob_calculator()
-#p.update(hand) # updates the deck acording to the card in our hand
-#p.update(d) # updates the deck acording to the cards that has been drawn when swaping
-#hand_t, hand_val = p.evaluate_hand(hand) # evaluates the hand
-#p.probability_oponent_has_better_hand(hand_t,hand_val) # prints the probability
+for hands in test_hands:
+    p = prob_calculator()
+    p.update(hands) # updates the deck acording to the card in our hand
+    #p.update(d) # updates the deck acording to the cards that has been drawn when swaping
+    hand_t, hand_val = p.evaluate_hand(hands) # evaluates the hand
+    prob = p.probability_oponent_has_better_hand(hand_t,hand_val) # prints the probability
+    print(f'hand type: {hand_t}, hand value: {hand_val}')
+    print(f'probability of opponent having a better hand: {prob}')
+    p.reset()
+    p.reset_removed_cards()
+

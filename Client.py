@@ -77,9 +77,7 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
                 return cb.BettingAnswer.ACTION_CHECK
     #-----POST-DRAW OPEN ACTION PHASE-----
     else:
-        best_opp_hand = a.get_best_opp_hand()
-        for opp in a.opponents:
-
+        opponent_hand_guess = a.get_opponent_hand_guess()
 
 
 
@@ -245,7 +243,7 @@ def infoPlayerDraw(_playerName, _cardCount):
 * @param hand              the players hand.
 '''
 def infoPlayerHand(_playerName, _hand):
-    a.opponent_hand(_playerName, _hand)
+    a.opponent_hand(_playerName,_hand)
     print("Player "+ _playerName +" hand " + str(_hand))
 
 
