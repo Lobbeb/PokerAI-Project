@@ -67,8 +67,6 @@ class opponent:
         self.in_round = False
         self.log_folds[self.rounds] = 1
     
-    
-    
     def not_yet_folded(self):
         return self.in_round
     
@@ -777,15 +775,17 @@ class Poker_Agent:
         pre_draw = 0
         post_draw = 0
         for opp in self.opponents:
-            pre_draw += opp.pre_draw
-            post_draw += opp.post_draw
+            if opp.in_round:
+                pre_draw += opp.pre_draw
+                post_draw += opp.post_draw
         return pre_draw, post_draw
     
     def get_best_opponent_hand(self):
         '''Returns the best hand of the opponents'''
         best_hand = "NAN"
         for opp in self.opponents:
-            if self.HAND_RANK.index(opp.possible_hand) > self.HAND_RANK.index(best_hand):
-                best_hand = opp.possible_hand
+            if opp.in_round:
+                if self.HAND_RANK.index(opp.possible_hand) > self.HAND_RANK.index(best_hand):
+                    best_hand = opp.possible_hand
         return best_hand
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
