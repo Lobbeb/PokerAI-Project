@@ -67,6 +67,8 @@ class opponent:
         self.in_round = False
         self.log_folds[self.rounds] = 1
     
+    
+    
     def not_yet_folded(self):
         return self.in_round
     
@@ -617,25 +619,6 @@ class opponent:
         return self.pre_draw, self.post_draw
     
 
-        
-
-
-
-                    
-
-
-
-
-
-
-                
-
-                
-
-
-
-
-
 
 class Poker_Agent:
     def __init__(self,name):
@@ -662,12 +645,7 @@ class Poker_Agent:
         self.has_drawn = True
         cards_to_throw, blufflag = ch.queryCardsToThrow(self.hand)
         self.bluff_oppurtunity = True if blufflag == 1 else False
-        ct = cards_to_throw.split()
-        s= ''
-        for c in ct:
-            s += str(c) +' '
-        return s
-    
+        return cards_to_throw
     def new_round(self):
 
         self.p.reset()
@@ -754,7 +732,7 @@ class Poker_Agent:
                 if name == key:
                     self.opponents[name].win_undisputed(1)
                 else:
-                    self.opponents[key].wsin_undisputed(0)
+                    self.opponents[key].win_undisputed(0)
         else:
             for key in self.opponents:    
                 self.opponents[key].win_undisputed(0)
@@ -769,17 +747,7 @@ class Poker_Agent:
         '''prints the end game results of each opponent'''
         for key in self.opponents:
             self.opponents[key].print_result()
-
-    def get_table_playstyle(self):
-        '''Returns the playstyle of each opponent'''
-        pre_draw = 0
-        post_draw = 0
-        for opp in self.opponents:
-            if opp.in_round:
-                pre_draw += opp.pre_draw
-                post_draw += opp.post_draw
-        return pre_draw, post_draw
-    
+        
     def get_best_opponent_hand(self):
         '''Returns the best hand of the opponents'''
         best_hand = "NAN"
@@ -789,4 +757,15 @@ class Poker_Agent:
                     best_hand = opp.possible_hand
                     opponent_with_best_hand = opp
         return best_hand, opponent_with_best_hand
-    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    def get_table_playstyle(self):
+        '''Returns the playstyle of each opponent'''
+        pre_draw = 0
+        post_draw = 0
+        for opp in self.opponents:
+            if opp.in_round:
+                pre_draw += opp.pre_draw
+                post_draw += opp.post_draw
+        return pre_draw, post_draw
+
+    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
