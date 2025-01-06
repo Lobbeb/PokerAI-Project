@@ -54,7 +54,7 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
     print(f'    |minpotafterOpen {_minimumPotAfterOpen} playersCurBet {_playersCurrentBet} remainingchips {_playersRemainingChips}')
     print("Minimum pot:", _minimumPotAfterOpen, "Current bet:", _playersCurrentBet, "Remaining chips:", _playersRemainingChips)
 
-    _maximumBet = _minimumPotAfterOpen + 40 if _playersRemainingChips > 40 else _playersRemainingChips
+    _maximumBet = _minimumPotAfterOpen + 20 if _playersRemainingChips > 20 else _playersRemainingChips
 
     hand_t, hand_val, prob_opp_better = a.get_hand_strength_and_prob()
     print("Current hand:", a.hand, "Probability opponent better:", prob_opp_better)
@@ -77,7 +77,13 @@ def queryOpenAction(_minimumPotAfterOpen, _playersCurrentBet, _playersRemainingC
                 return cb.BettingAnswer.ACTION_CHECK
     #-----POST-DRAW OPEN ACTION PHASE-----
     else:
-        opponent_hand_guess = a.get_opponent_hand_guess()
+        best_opp_hand = a.get_best_opponent_hand()
+        if a.HAND_RANK.index(hand_t) < a.HAND_RANK.index(best_opp_hand):
+            cb.BettingAnswer.ACTION_CHECK
+        elif a.HAND_RANK.index(hand_t) == a.HAND_RANK.index(best_opp_hand):
+            
+
+
 
 
 
@@ -125,7 +131,6 @@ def queryCardsToThrow(_hand):
     print(f'    |hand {_hand}')
     return a.cards_to_throw()
 
-
 # InfoFunction:
 
 '''
@@ -140,7 +145,8 @@ def infoNewRound(_round):
 * Called when the poker server informs that the game is completed.
 '''
 def infoGameOver():
-    print('The game is over.')
+    print('||||||||||||||||||||||||||||||||||||||        GAME OVER        ||||||||||||||||||||||||||||||||||||||')
+    print('')
     a.print_oppnent_results()
     
 
@@ -160,7 +166,8 @@ def infoPlayerChips(_playerName, _chips):
 * @param ante  the new value of the ante.
 '''
 def infoAnteChanged(_ante):
-    print('The ante is: ' + _ante)
+    print(f'>    >    >    >    >    > NEW ANTE: {_ante}<   <   <   <   <   <')
+    
 
 '''
 * Called when a player had to do a forced bet (putting the ante in the pot).
@@ -168,6 +175,7 @@ def infoAnteChanged(_ante):
 * @param forcedBet     the number of chips forced to bet.
 '''
 def infoForcedBet(_playerName, _forcedBet):
+    print(f'Forced bet by player: {_playerName} amount: {_forcedBet}')
     #print("Player "+ _playerName +" made a forced bet of "+ _forcedBet + " chips.")
     pass
 
@@ -178,7 +186,8 @@ def infoForcedBet(_playerName, _forcedBet):
 '''
 def infoPlayerOpen(_playerName, _openBet):
     a.opponent_open(_playerName, _openBet)
-    #print("Player "+ _playerName + " opened, has put "+ _openBet +" chips into the pot.")
+    print(f'OPEN by player: {_playerName} amount: {_openBet}')
+
     
 
 '''
@@ -186,9 +195,7 @@ def infoPlayerOpen(_playerName, _openBet):
 * @param playerName        the name of the player that checks.
 '''
 def infoPlayerCheck(_playerName):
-    if _playerName != POKER_CLIENT_NAME:
-        print("     |Player "+ _playerName +" checked.")
-    pass
+    print(f'CHECK by player {_playerName}')
 
 '''
 * Called when a player raises.
@@ -198,7 +205,7 @@ def infoPlayerCheck(_playerName):
 def infoPlayerRise(_playerName, _amountRaisedTo):
     if _playerName != POKER_CLIENT_NAME:
         a.opponent_raised(_playerName, int(_amountRaisedTo))
-        print("     |Player "+_playerName +" raised to "+ _amountRaisedTo+ " chips.")
+    print(f'RAISE by player {_playerName} amount: {_amountRaisedTo}')
     pass
 
 '''
@@ -206,9 +213,8 @@ def infoPlayerRise(_playerName, _amountRaisedTo):
 * @param playerName        the name of the player that calls.
 '''
 def infoPlayerCall(_playerName):
-    if _playerName != POKER_CLIENT_NAME:
-        print("     |Player "+_playerName +" called.")
-    pass
+    print(f'CALL player {_playerName}')
+    
 
 '''
 * Called when a player folds.
@@ -217,7 +223,7 @@ def infoPlayerCall(_playerName):
 def infoPlayerFold(_playerName):
     if _playerName != POKER_CLIENT_NAME:
         a.opponent_fold(_playerName)
-        print("     |Player "+ _playerName +" folded.")
+    print(f'FOLD player: {_playerName}')
 
 '''
 * Called when a player goes all-in.
@@ -225,7 +231,7 @@ def infoPlayerFold(_playerName):
 * @param allInChipCount    the amount of chips the player has in the pot and goes all-in with.
 '''
 def infoPlayerAllIn(_playerName, _allInChipCount):
-    print("Player "+_playerName +" goes all-in with a pot of "+_allInChipCount+" chips.")
+    print(f'ALL-IN player: {_playerName} amounting to {_allInChipCount}')
     pass
 
 '''
@@ -235,7 +241,7 @@ def infoPlayerAllIn(_playerName, _allInChipCount):
 '''
 def infoPlayerDraw(_playerName, _cardCount):
     a.oponent_cards_thrown(_playerName, _cardCount)
-    #print("Player "+ _playerName + " exchanged "+ _cardCount +" cards.")
+    print(f'CARDS THROWN player {_playerName} number of cards {_cardCount}')
 
 '''
 * Called during the showdown when a player shows his hand.
@@ -261,7 +267,7 @@ def infoCardsInHand(_hand):
 def infoRoundUndisputedWin(_playerName, _winAmount):
     a.opponent_win(_playerName,True)
     #a.opponent_win_undisputed (_playerName)
-    print("Player" + _playerName +" won "+ _winAmount +" chips undisputed.")
+    print("UNDISPUTED Player" + _playerName +" amount "+ _winAmount +" chips.")
     a.new_round()
 
 '''
@@ -272,5 +278,5 @@ def infoRoundUndisputedWin(_playerName, _winAmount):
 '''
 def infoRoundResult(_playerName, _winAmount):
     a.opponent_win(_playerName,False)
-    print("Player "+ _playerName +" won " + _winAmount + " chips.")
+    print("WINNER Player "+ _playerName +" amount " + _winAmount + " chips.")
     a.new_round()
