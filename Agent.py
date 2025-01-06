@@ -787,5 +787,6 @@ class Poker_Agent:
             if opp.in_round:
                 if self.HAND_RANK.index(opp.possible_hand) > self.HAND_RANK.index(best_hand):
                     best_hand = opp.possible_hand
-        return best_hand
-    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    opponent_with_best_hand = opp
+        return best_hand, opponent_with_best_hand
+    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Handle Opponent^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
